@@ -65,7 +65,7 @@ onPlayerSpawned()
     {
         self waittill("spawned_player");
         self freezeControls(false);
-        
+        self resetmoney(500000);
         self thread set_delay();
         self thread set_round();
         self thread give_player_assets();
@@ -76,7 +76,6 @@ settings()
 {
     setdvar("sv_cheats", 1);
     setdvar("g_useholdtime", 0);
-    resetmoney(500000);
 
     dvars = [];
     dvars[dvars.size] = ["doors", "1"];
@@ -484,7 +483,7 @@ strat_tester_txt()
         return;
 
     hud_text = self createfontstring("default", 1.4);
-    hud_text setpoint("TOPRIGHT", "TOPRIGHT", -20, 20);     
+    hud_text setpoint("TOPRIGHT", "TOPRIGHT", -5, 5);     
     hud_text.label = &"Strat Tester";
     hud_text.sort = 1000; 
 }
