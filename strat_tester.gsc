@@ -37,23 +37,36 @@ setup_settings()
     self thread hud_init();
 }
 
+
 hud_init()
 {
     self endon("disconnect");
     self thread strat_tester_txt();
     
+    self thread cleanupHUD();
+    
     if (getDvarInt("zombie_hud"))
-    {
         self thread zombie_hud();
-    }
     if (getDvarInt("velocity_hud"))
-    {
         self thread velocity_hud();
-    }
     if (getDvarInt("zone_hud"))
-    {
         self thread zone_hud();
-    }
+}
+
+cleanupHUD()
+{
+    self endon("disconnect");
+    
+    self waittill("disconnect");
+    
+    if(isDefined(self.zT_hud)) 
+        self.zT_hud destroy();
+    if(isDefined(self.vel_hud)) 
+        self.vel_hud destroy();
+    if(isDefined(self.zone_hud)) 
+        self.zone_hud destroy();
+    if(isDefined(self.hud_text)) 
+        self.hud_text destroy();
 }
 
 onPlayerSpawned()
@@ -90,11 +103,9 @@ settings()
     dvars[dvars.size] = ["velocity_hud", "0"];
     dvars[dvars.size] = ["zone_hud", "0"];
 
-    i = 0;
-    while(i < dvars.size)
+    foreach(dvar in dvars)
     {
-        create_dvar(dvars[i][0], dvars[i][1]);
-        i++;
+        create_dvar(dvar[0], dvar[1]);
     }
 }
 
@@ -105,20 +116,27 @@ power()
 
     wait 1;
 
-    if (!isdefined(level.power_switches))
+    if (!isDefined(level.power_switches) || level.power_switches.size == 0)
         return;
 
     foreach (power_switch in level.power_switches)
     {
+        if (!isDefined(power_switch)) continue;
+        
         common_scripts\utility::flag_set(power_switch.script_flag);
-
         power_switch notify("on");
 
-        foreach (ent in power_switch.showents)
-            ent show();
-
-        foreach (ent in power_switch.hideents)
-            ent hide();
+        if (isDefined(power_switch.showents))
+        {
+            foreach (ent in power_switch.showents)
+                if (isDefined(ent)) ent show();
+        }
+        
+        if (isDefined(power_switch.hideents))
+        {
+            foreach (ent in power_switch.hideents)
+                if (isDefined(ent)) ent hide();
+        }
     }
 }
 
@@ -401,28 +419,37 @@ zombie_hud()
     if (level.getMapName == "mp_zombie_brg")
         return;
 
-    zT_hud = newClientHudElem(self);
-    zT_hud.alignx = "right";
-    zT_hud.aligny = "top";
-    zT_hud.horzalign = "user_left";
-    zT_hud.vertalign = "user_top";
-    zT_hud.x += 20;
-    zT_hud.y += 80;
-    zT_hud.fontscale = 1;
-    zT_hud.hidewheninmenu = 1;
-    zT_hud.label = &"Zombies remaining: ";
-    zT_hud.alpha = 1;
+    self.zT_hud = newClientHudElem(self);
+    self.zT_hud.alignx = "right";
+    self.zT_hud.aligny = "top";
+    self.zT_hud.horzalign = "user_left";
+    self.zT_hud.vertalign = "user_top";
+    self.zT_hud.x += 20;
+    self.zT_hud.y += 80;
+    self.zT_hud.fontscale = 1;
+    self.zT_hud.hidewheninmenu = 1;
+    self.zT_hud.label = &"Zombies remaining: ";
+    self.zT_hud.alpha = 1;
+    
+    lastCount = -1;
     
     while(true)
     {
-        var_1 = maps\mp\zombies\zombies_spawn_manager::calculatetotalai();
-        var_2 = int(self.kills);
-        var_3 = int(self.killsatroundstart);
-        var_4 = (var_2 - var_3);
-        var_5 = (var_1 - var_4); 
-        zT_hud setvalue(var_5);
-            wait 0.1; 
+        currentCount = self thread calculateZombieCount();
+        if(currentCount != lastCount) 
+        {
+            self.zT_hud setvalue(currentCount);
+            lastCount = currentCount;
+        }
+        wait 0.25;
     }
+}
+
+calculateZombieCount()
+{
+    totalAI = maps\mp\zombies\zombies_spawn_manager::calculatetotalai();
+    killsThisRound = int(self.kills) - int(self.killsatroundstart);
+    return totalAI - killsThisRound;
 }
 
 velocity_hud()
@@ -430,24 +457,31 @@ velocity_hud()
     if (level.getMapName == "mp_zombie_brg")
         return;
 
-    vel_hud = newClientHudElem(self);
-    vel_hud.alignx = "right";
-    vel_hud.aligny = "top";
-    vel_hud.horzalign = "user_left";
-    vel_hud.vertalign = "user_top";
-    vel_hud.x += 20;
-    vel_hud.y += 70;
-    vel_hud.fontscale = 1.0;
-    vel_hud.hidewheninmenu = 1;
-    vel_hud.label = &"Velocity: ";
-    vel_hud.alpha = 1;
+    self.vel_hud = newClientHudElem(self);
+    self.vel_hud.alignx = "right";
+    self.vel_hud.aligny = "top";
+    self.vel_hud.horzalign = "user_left";
+    self.vel_hud.vertalign = "user_top";
+    self.vel_hud.x += 20;
+    self.vel_hud.y += 70;
+    self.vel_hud.fontscale = 1.0;
+    self.vel_hud.hidewheninmenu = 1;
+    self.vel_hud.label = &"Velocity: ";
+    self.vel_hud.alpha = 1;
 
+    lastVel = -1;
+    
     while(true)
     {
-        self.newvel = self getvelocity();
-        self.newvel = sqrt(float(self.newvel[0] * self.newvel[0]) + float(self.newvel[1] * self.newvel[1]));
-        vel_hud setvalue(floor(self.newvel));
-        wait 0.05; 
+        velocity = self getvelocity();
+        currentVel = floor(sqrt(float(velocity[0] * velocity[0]) + float(velocity[1] * velocity[1])));
+        
+        if(currentVel != lastVel) 
+        {
+            self.vel_hud setvalue(currentVel);
+            lastVel = currentVel;
+        }
+        wait 0.1;
     }
 }
 
@@ -456,24 +490,27 @@ zone_hud()
     if (level.getMapName == "mp_zombie_brg")
         return;
 
-    zone_hud = newClientHudElem(self);
-    zone_hud.alignx = "right";
-    zone_hud.aligny = "top";
-    zone_hud.horzalign = "user_left";
-    zone_hud.vertalign = "user_top";
-    zone_hud.x += 20;
-    zone_hud.y += 60;
-    zone_hud.fontscale = 1.0;
-    zone_hud.hidewheninmenu = 1;
-    zone_hud.alpha = 1;
+    self.zone_hud = newClientHudElem(self);
+    self.zone_hud.alignx = "right";
+    self.zone_hud.aligny = "top";
+    self.zone_hud.horzalign = "user_left";
+    self.zone_hud.vertalign = "user_top";
+    self.zone_hud.x += 20;
+    self.zone_hud.y += 60;
+    self.zone_hud.fontscale = 1.0;
+    self.zone_hud.hidewheninmenu = 1;
+    self.zone_hud.alpha = 1;
 
+    lastZone = "";
+    
     while(true)
     {
-        if (isdefined(self.currentzone))
+        if (isDefined(self.currentzone) && self.currentzone != lastZone)
         {
-            zone_hud setText(self.currentzone);
+            self.zone_hud setText(self.currentzone);
+            lastZone = self.currentzone;
         }
-        wait 0.1;
+        wait 0.2;
     }
 }
 
@@ -487,5 +524,4 @@ strat_tester_txt()
     hud_text.label = &"Strat Tester";
     hud_text.sort = 1000; 
 }
-
 
