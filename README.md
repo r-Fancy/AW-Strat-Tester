@@ -6,11 +6,14 @@ This mod is meant to be an all-encompassing mod, with loads of features and opti
 
 ## Installing
 
-1. Install [S1x_Files](https://mega.nz/folder/oLAViLiZ#3xUbLir3T9AdB51FqdhPlQ).
-1. Drag S1x Files into your Game Folder.
-1. Create a "s1x" Folder if needed.
-1. Create a "scripts" Folder inside "s1x" Folder.
-1. Drag and Drop the Strat Tester script inside "scripts" Folder.
+1. Download Strat Tester at `Realease`
+2. Download [s1-competitive](https://gitlab.com/EvelynYuki/Competitive-S1/-/blob/main/competitive-s1.exe).
+3. Put the s1-competitive exe inside your gamefolder and launch the exe.
+4. Put your firstbox patch inside Call of Duty Advanced Warfare\storage\scripts\mp.
+
+Done!
+
+(This also works with other clients, but the locations may differ)
 
 ## Current Features:
 
