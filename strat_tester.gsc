@@ -1,18 +1,39 @@
+#include common_scripts\utility;
+#include common_scripts\_createfx;
+
 #include maps\mp\gametypes\zombies;
+#include maps\mp\gametypes\_hud_util;
+
+#include maps\mp\_utility;
+
 #include maps\mp\zombies\_zombies;
 #include maps\mp\zombies\zombies_spawn_manager;
 #include maps\mp\zombies\_doors;
 #include maps\mp\zombies\_terminals;
 #include maps\mp\zombies\_util;
 #include maps\mp\zombies\_wall_buys;
-#include maps\mp\_utility;
-#include common_scripts\utility;
-#include maps\mp\gametypes\_hud_util;
 #include maps\mp\zombies\_power;
+
+
+
+main()
+{
+    level.getMapName = getMapName();
+    setdvar("sv_cheats", 1); 
+    setdvar("g_useholdtime", 0); 
+    create_dvar("loadout", 1);
+    create_dvar("doors", 1);
+    create_dvar("power", 1);
+    create_dvar("round", 60);
+    create_dvar("delay", 30);
+    create_dvar("perks", 1);
+    create_dvar("zombie_hud", 0);
+    create_dvar("velocity_hud", 0);
+    create_dvar("zone_hud", 0);
+}
 
 init()
 {    
-    level.getMapName = maps\mp\_utility::getMapName();
     level thread onPlayerConnect();
     level thread doors();
     level thread power();
@@ -33,7 +54,6 @@ onPlayerConnect()
 setup_settings()
 {
     self endon("disconnect");
-    self thread settings();
     self thread hud_init();
 }
 
@@ -82,30 +102,6 @@ onPlayerSpawned()
         self thread set_delay();
         self thread set_round();
         self thread give_player_assets();
-    }
-}
-
-settings()
-{
-    setdvar("sv_cheats", 1);
-    setdvar("g_useholdtime", 0);
-
-    dvars = [];
-    dvars[dvars.size] = ["doors", "1"];
-    dvars[dvars.size] = ["power", "1"];
-
-    dvars[dvars.size] = ["round", "60"];
-    dvars[dvars.size] = ["delay", "30"];
-    dvars[dvars.size] = ["loadout", "1"];
-    dvars[dvars.size] = ["perks", "1"];
-
-    dvars[dvars.size] = ["zombie_hud", "0"];
-    dvars[dvars.size] = ["velocity_hud", "0"];
-    dvars[dvars.size] = ["zone_hud", "0"];
-
-    foreach(dvar in dvars)
-    {
-        create_dvar(dvar[0], dvar[1]);
     }
 }
 
@@ -219,7 +215,7 @@ set_round()
 
 set_delay()
 {
-    self endon("disconnect");
+    level endon("disconnect");
     level endon("game_ended");
 
     level.waitbs = getDvarInt("delay");
@@ -228,21 +224,14 @@ set_delay()
 
     while(level.waitbs > -1)
     {
-        self.waithud settext(level.waitbs);
+        level.waithud settext(level.waitbs);
         wait 1;
         level.waitbs --;
     }
 
     maps\mp\zombies\_util::pausezombiespawning(0);
-    self.waithud destroy();
+    level.waithud destroy();
 }
-
-//Loadout Section
-
-//give_player_assets --- function that runs upgrades, loadout and upgrades_revive
-//upgrade --- gives Exo suit and Exo upgrades depending on map
-//upgrades_revive --- gives Exo health and Exo revive after player is revived
-//loadout --- gives player weapons depending on map
 
 give_player_assets()
 {
@@ -256,45 +245,47 @@ upgrades()
     if(getDvarInt("perks") == 0)
         return;
 
-    wait 5;
-    switch(level.getMapName)
+    wait 2;
+    if (level.getMapName == "mp_zombie_lab" || level.getMapName == "mp_zombie_brg")
     {
-        case "mp_zombie_lab":
             perkterminalgive(self, "exo_suit");
             perkterminalgive(self, "exo_revive");
             perkterminalgive(self, "exo_stabilizer");
             perkterminalgive(self, "exo_slam");
             perkterminalgive(self, "specialty_fastreload");
             perkterminalgive(self, "exo_health");
-            break;
-        case "mp_zombie_brg":
-            perkterminalgive(self, "exo_suit");
-            perkterminalgive(self, "exo_revive");
-            perkterminalgive(self, "exo_stabilizer");
-            perkterminalgive(self, "exo_slam");
-            perkterminalgive(self, "specialty_fastreload");
-            perkterminalgive(self, "exo_health");
-            break;
-        case "mp_zombie_ark":
-            perkterminalgive(self, "exo_suit");
-            perkterminalgive(self, "exo_tacticalArmor");
-            perkterminalgive(self, "exo_revive");
-            perkterminalgive(self, "exo_stabilizer");
-            perkterminalgive(self, "exo_slam");
-            perkterminalgive(self, "specialty_fastreload");
-            perkterminalgive(self, "exo_health");
-            break;
-        case "mp_zombie_h2o":
-            perkterminalgive(self, "exo_suit");
-            perkterminalgive(self, "exo_tacticalArmor");
-            perkterminalgive(self, "exo_revive");
-            perkterminalgive(self, "exo_stabilizer");
-            perkterminalgive(self, "exo_slam");
-            perkterminalgive(self, "specialty_fastreload");
-            perkterminalgive(self, "exo_health");
-            break;
-        return;
     }
+
+    if (level.getMapName == "mp_zombie_ark" || level.getMapName == "mp_zombie_h2o")
+    {
+            perkterminalgive(self, "exo_suit");
+            perkterminalgive(self, "exo_tacticalArmor");
+            perkterminalgive(self, "exo_revive");
+            perkterminalgive(self, "exo_stabilizer");
+            perkterminalgive(self, "exo_slam");
+            perkterminalgive(self, "specialty_fastreload");
+            perkterminalgive(self, "exo_health");
+    }
+}
+
+loadout()
+{
+    if(getDvarInt("loadout") == 0)
+        return;
+
+        wait 5;
+    loadout = ["iw5_mahemzm_mp", "iw5_exocrossbowzm_mp"];               
+    setweaponlevel( self, loadout[1], 15);			
+    setweaponlevel( self, loadout[0], 15);  
+        wait 1;
+    self takeweapon( "iw5_titan45zm_mp" );   
+    
+        wait 5;
+    self settacticalweapon( "distraction_drone_zombie_mp" );
+    self setweaponammoclip( "distraction_drone_zombie_mp", 3 );
+
+    self setlethalweapon( "contact_grenade_zombies_mp" );
+    self setweaponammoclip( "contact_grenade_zombies_mp", 5 );  
 }
 
 upgrades_revive()
@@ -306,113 +297,9 @@ upgrades_revive()
     while(1)
     {
         self waittill("revive_trigger");
-        switch(level.getMapName)
-        {
-        case "mp_zombie_lab":
-            perkterminalgive(self, "exo_health");
-            perkterminalgive(self, "exo_revive");
-            break;
-        case "mp_zombie_brg":
-            perkterminalgive(self, "exo_health");
-            perkterminalgive(self, "exo_revive");
-            break;
-        case "mp_zombie_ark":
-            perkterminalgive(self, "exo_health");
-            perkterminalgive(self, "exo_revive");
-            break;
-        case "mp_zombie_h2o":
-            perkterminalgive(self, "exo_health");
-            perkterminalgive(self, "exo_revive");
-            break;  
-        return; 
-        }
+        upgrades();
     }
 }
-
-loadout()
-{
-    if(getDvarInt("loadout") == 0)
-        return;
-
-    if(getDvarInt("loadout") == 1) //Default Loadout
-    {
-    switch(level.getMapName)
-    {
-        case "mp_zombie_lab":
-            loadout = ["iw5_mahemzm_mp", "iw5_exocrossbowzm_mp"]; 
-            setweaponlevel( self, loadout[1], 15);
-            setweaponlevel( self, loadout[0], 15);
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );  
-            break;
-
-        case "mp_zombie_brg":
-            loadout = ["iw5_mahemzm_mp", "iw5_exocrossbowzm_mp"];                 
-            setweaponlevel( self, loadout[1], 15);
-            setweaponlevel( self, loadout[0], 15);
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );   
-            break;  
-
-        case "mp_zombie_ark":
-            loadout = ["iw5_linegunzm_mp", "iw5_fusionzm_mp"];                
-            setweaponlevel( self, loadout[1], 15);
-            setweaponlevel( self, loadout[0], 15);    
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );  
-            break;      
-
-        case "mp_zombie_h2o":
-            loadout = ["iw5_tridentzm_mp", "iw5_dlcgun4zm_mp"];               
-            setweaponlevel( self, loadout[1], 15);			
-            setweaponlevel( self, loadout[0], 15);  
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );           
-            break;    
-        return;                
-    }
-    wait 5;
-    self settacticalweapon( "distraction_drone_zombie_mp" );
-    self setweaponammoclip( "distraction_drone_zombie_mp", 3 );
-
-    self setlethalweapon( "contact_grenade_zombies_mp" );
-    self setweaponammoclip( "contact_grenade_zombies_mp", 5 );
-    }
-
-    if(getDvarInt("loadout") == 2) //First Room Loadout
-    {
-        switch(level.getMapName)
-        {
-            
-        case "mp_zombie_brg":
-            loadout = ["iw5_rhinozm_mp", "iw5_microwavezm_mp"];                 
-            setweaponlevel( self, loadout[1], 15);
-            setweaponlevel( self, loadout[0], 15);
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );   
-            break;
-        case "mp_zombie_h2o":
-            loadout = ["iw5_rhinozm_mp", "iw5_dlcgun4zm_mp"];               
-            setweaponlevel( self, loadout[1], 15);			
-            setweaponlevel( self, loadout[0], 15);  
-                wait 5;
-            self takeweapon( "iw5_titan45zm_mp" );           
-            break;    
-        return;     
-        }
-        self settacticalweapon( "distraction_drone_zombie_mp" );
-        self giveweapon( "distraction_drone_zombie_mp" );
-        self setweaponammoclip( "distraction_drone_zombie_mp", 2 );
-    }
-}
-
-//HUD Section
-
-//zombie_hud --- zombie_remaining, has a bug where it breaks past round 75 and it doesnt include nuke kills & Explo Zombies 
-//velocity_hud --- prints current player speed
-//zone_hud --- prints current zone area
-
-//return mp_zombie_brg due to overflow issues
 
 zombie_hud()
 {
@@ -524,4 +411,5 @@ strat_tester_txt()
     hud_text.label = &"Strat Tester";
     hud_text.sort = 1000; 
 }
+
 
