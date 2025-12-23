@@ -14,8 +14,6 @@
 #include maps\mp\zombies\_wall_buys;
 #include maps\mp\zombies\_power;
 
-
-
 main()
 {
     level.getMapName = getMapName();
@@ -411,5 +409,6 @@ strat_tester_txt()
     hud_text.label = &"Strat Tester";
     hud_text.sort = 1000; 
 }
+
 
 
