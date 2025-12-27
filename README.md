@@ -49,10 +49,10 @@ Done!
     - `power 0`
 
 ### Weapon Options
-- Gives Weapon depending on what Preset you choice
     - `loadout 0` spawn with no loadout
     - `loadout 1` spawn with default ladout
-    - `loadout 2` spawn with first room loadout for Infection & Descent 
+      
+- Removed Multiple loadouts as it will be replaced with dvars in future updates.
 
 # Cheats
 
