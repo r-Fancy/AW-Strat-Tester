@@ -4,7 +4,7 @@ This is a mod for creating, testing, and learning new strategies in Call of Duty
 
 This mod is meant to be an all-encompassing mod, with loads of features and options to give yourself the loadout and map setup you need to practice your strategies.
 
-## Installing
+## Download
 
 1. Download Strat Tester at `Realease`
 2. Download [s1-competitive](https://gitlab.com/EvelynYuki/Competitive-S1/-/blob/main/competitive-s1.exe).
