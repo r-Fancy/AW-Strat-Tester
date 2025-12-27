@@ -17,7 +17,7 @@
 main()
 {
     level.getMapName = getMapName();
-    setdvar("sv_cheats", 1); 
+    //setdvar("sv_cheats", 1); 
     setdvar("g_useholdtime", 0); 
     create_dvar("loadout", 1);
     create_dvar("doors", 1);
@@ -59,8 +59,7 @@ setup_settings()
 hud_init()
 {
     self endon("disconnect");
-    self thread strat_tester_txt();
-    
+    self thread strat_tester_txt();    
     self thread cleanupHUD();
     
     if (getDvarInt("zombie_hud"))
@@ -73,8 +72,7 @@ hud_init()
 
 cleanupHUD()
 {
-    self endon("disconnect");
-    
+    self endon("disconnect");    
     self waittill("disconnect");
     
     if(isDefined(self.zT_hud)) 
@@ -243,7 +241,7 @@ upgrades()
     if(getDvarInt("perks") == 0)
         return;
 
-    wait 2;
+    wait 5;
     if (level.getMapName == "mp_zombie_lab" || level.getMapName == "mp_zombie_brg")
     {
             perkterminalgive(self, "exo_suit");
@@ -271,12 +269,13 @@ loadout()
     if(getDvarInt("loadout") == 0)
         return;
 
+        wait 2;
+    self takeweapon( "iw5_titan45zm_mp" );
+
         wait 5;
     loadout = ["iw5_mahemzm_mp", "iw5_exocrossbowzm_mp"];               
     setweaponlevel( self, loadout[1], 15);			
-    setweaponlevel( self, loadout[0], 15);  
-        wait 1;
-    self takeweapon( "iw5_titan45zm_mp" );   
+    setweaponlevel( self, loadout[0], 15);   
     
         wait 5;
     self settacticalweapon( "distraction_drone_zombie_mp" );
@@ -409,6 +408,3 @@ strat_tester_txt()
     hud_text.label = &"Strat Tester";
     hud_text.sort = 1000; 
 }
-
-
-
