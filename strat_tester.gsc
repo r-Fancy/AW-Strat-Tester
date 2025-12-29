@@ -154,29 +154,56 @@ doors()
     {
         case "mp_zombie_lab":
             doorFlags = [
-                "courtyard_to_roundabout", "roundabout_to_lab", "roundabout_to_military",
-                "courtyard_to_administration", "administration_to_lab", "military_to_experimentation"
+                "courtyard_to_roundabout",
+                "roundabout_to_lab",
+                "roundabout_to_military",
+                "courtyard_to_administration",
+                "administration_to_lab", 
+                "lab_to_experimentation",
+                "military_to_experimentation"
             ];
             break;
+
         case "mp_zombie_brg":
             doorFlags = [
-                "warehouse_to_gas_station", "warehouse_to_atlas", "gas_station_to_sewer",
-                "atlas_to_sewer", "sewer_to_burgertown", "sewertrans_to_sewertunnel",
-                "sewermain_to_sewercave", "burgertown_storage", "gas_station_interior", "atlas_command"
+                "warehouse_to_gas_station",
+                "warehouse_to_atlas",
+                "gas_station_interior", 
+                "gas_station_to_sewer",
+                "atlas_command",
+                "atlas_to_sewer",  
+                "sewertrans_to_sewertunnel",
+                "sewermain_to_sewercave",
+                "sewer_to_burgertown", 
+                "burgertown_storage"  
             ];
             break;
         case "mp_zombie_ark":
             doorFlags = [
-                "sidebay_to_armory", "rearbay_to_armory", "cargo_elevator_to_cargo_bay",
-                "biomed_to_cargo_bay", "armory_to_biomed", "armory_to_cargo_elevator",
-                "medical_to_biomed", "moonpool_to_cargo_elevator", "sidebay_to_medical", "rearbay_to_moonpool"
+                "sidebay_to_armory", 
+                "rearbay_to_armory", 
+                "cargo_elevator_to_cargo_bay",
+                "biomed_to_cargo_bay", 
+                "armory_to_biomed", 
+                "armory_to_cargo_elevator",
+                "medical_to_biomed", 
+                "moonpool_to_cargo_elevator", 
+                "sidebay_to_medical", 
+                "rearbay_to_moonpool"
             ];
             break;
         case "mp_zombie_h2o":
             doorFlags = [
-                "start_to_zone_01", "start_to_zone_02", "zone_01_to_atrium",
-                "zone_01_to_zone_01a", "zone_02_to_zone_01", "zone_02_to_zone_02a",
-                "zone_02a_to_venthall", "venthall_to_zone_03", "venthall_to_atrium", "atrium_to_zone_04"
+                "start_to_zone_01", 
+                "start_to_zone_02", 
+                "zone_01_to_atrium",
+                /*"zone_01_to_zone_01a",*/ 
+                "zone_02_to_zone_01", 
+                /*"zone_02_to_zone_02a",*/
+                "zone_02a_to_venthall", 
+                "venthall_to_zone_03", 
+                "venthall_to_atrium", 
+                "atrium_to_zone_04"
             ];
             break;
         return;
