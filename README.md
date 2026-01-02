@@ -49,10 +49,19 @@ Done!
     - `power 0`
 
 ### Weapon Options
-    - `loadout 0` spawn with no loadout
-    - `loadout 1` spawn with default ladout
-      
-- Removed Multiple loadouts as it will be replaced with dvars in future updates.
+- Enable or Dissable loadout
+    - `loadout 1` / `loadout 0`
+
+- Choose with what weapon you spawn in
+    - `primary arx160`
+    - `secondary rw1`
+
+- `Change Weapon level`
+    - `lvl 15`
+
+- Choose with what tactical & lethal you spawn in
+    - `tactical distraction_drone`
+    - `lethal contact_grenade`
 
 # Cheats
 
