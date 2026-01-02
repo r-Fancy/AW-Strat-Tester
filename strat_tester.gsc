@@ -19,12 +19,20 @@ main()
     level.getMapName = getMapName();
     //setdvar("sv_cheats", 1); 
     setdvar("g_useholdtime", 0); 
-    create_dvar("loadout", 1);
     create_dvar("doors", 1);
     create_dvar("power", 1);
     create_dvar("round", 60);
     create_dvar("delay", 30);
+
+    create_dvar("loadout", 1);
+    create_dvar("primary", "arx160");
+    create_dvar("secondary", "rw1");
+    create_dvar("lvl", 15);
     create_dvar("perks", 1);
+    
+    create_dvar("lethal", "contact_grenade");
+    create_dvar("tactical", "distraction_drone");
+
     create_dvar("zombie_hud", 0);
     create_dvar("velocity_hud", 0);
     create_dvar("zone_hud", 0);
@@ -33,8 +41,61 @@ main()
 init()
 {    
     level thread onPlayerConnect();
+    level thread initWeaponDatabase();
     level thread doors();
     level thread power();
+}
+
+initWeaponDatabase()
+{
+    level.weaponData = [];
+    
+    // Primary weapons
+    level.weaponData["arx160"] = "iw5_arx160zm_mp";
+    level.weaponData["maul"] = "iw5_maulzm_mp";
+    level.weaponData["hbra3"] = "iw5_hbra3zm_mp";
+    level.weaponData["hmr9"] = "iw5_hmr9zm_mp";
+    level.weaponData["himar"] = "iw5_himarzm_mp";
+    level.weaponData["m182spr"] = "iw5_m182sprzm_mp";
+    level.weaponData["mp11"] = "iw5_mp11zm_mp";
+    level.weaponData["sac3"] = "iw5_sac3zm_mp";
+    level.weaponData["uts19"] = "iw5_uts19zm_mp";
+    level.weaponData["lsat"] = "iw5_lsatzm_mp";
+    level.weaponData["asaw"] = "iw5_asawzm_mp";
+    
+    // Secondary weapons
+    level.weaponData["rw1"] = "iw5_rw1zm_mp";
+    level.weaponData["vbr"] = "iw5_vbrzm_mp";
+    level.weaponData["gm6"] = "iw5_gm6zm_mp";
+    level.weaponData["rhino"] = "iw5_rhinozm_mp";
+    
+    // Special/DLC weapons
+    level.weaponData["ak12"] = "iw5_ak12zm_mp";
+    level.weaponData["bal27"] = "iw5_bal27zm_mp";
+    level.weaponData["asm1"] = "iw5_asm1zm_mp";
+    level.weaponData["sn6"] = "iw5_sn6zm_mp";
+    level.weaponData["fusion"] = "iw5_fusionzm_mp";
+    level.weaponData["crossbow"] = "iw5_exocrossbowzm_mp";
+    level.weaponData["mahem"] = "iw5_mahemzm_mp";
+    level.weaponData["em1"] = "iw5_em1zm_mp";
+    level.weaponData["ae4"] = "iw5_dlcgun1zm_mp";
+    level.weaponData["ohm"] = "iw5_dlcgun2zm_mp";
+    level.weaponData["m1"] = "iw5_dlcgun3zm_mp";
+    level.weaponData["microwave"] = "iw5_microwavezm_mp";
+    level.weaponData["linegun"] = "iw5_linegunzm_mp";
+    level.weaponData["trident"] = "iw5_tridentzm_mp";
+    level.weaponData["blunderbuss"] = "iw5_dlcgun4zm_mp";
+    level.weaponData["titan45"] = "iw5_titan45zm_mp";
+    
+    // Equipment
+    level.weaponData["contact_grenade"] = "contact_grenade_zombies_mp";
+    level.weaponData["explosive_drone"] = "explosive_drone_zombie_mp";
+    level.weaponData["distraction_drone"] = "distraction_drone_zombie_mp";
+    level.weaponData["dna_aoe_grenade"] = "dna_aoe_grenade_zombie_mp";
+    level.weaponData["teleport"] = "teleport_zombies_mp";
+    level.weaponData["repulsor"] = "repulsor_zombie_mp";
+    
+    level.weaponData["frag_grenade"] = "frag_grenade_zombies_mp";
 }
 
 onPlayerConnect()
@@ -115,7 +176,7 @@ power()
     {
         if (!isDefined(power_switch)) continue;
         
-        common_scripts\utility::flag_set(power_switch.script_flag);
+        flag_set(power_switch.script_flag);
         power_switch notify("on");
 
         if (isDefined(power_switch.showents))
@@ -137,15 +198,15 @@ doors()
     if(getDvarInt("doors") == 0)
         return;
         
-    common_scripts\utility::flag_init("door_opened");
+    flag_init("door_opened");
     if (!isdefined(level.doorhintstrings))
     {
         level.doorhintstrings = [];
     }
     if (!isdefined(level.zombiedoors))
     {
-        level.zombiedoors = common_scripts\utility::getstructarray("door", "targetname");
-        common_scripts\utility::array_thread(level.zombiedoors, ::init_door);
+        level.zombiedoors = getstructarray("door", "targetname");
+        array_thread(level.zombiedoors, ::init_door);
     }
     wait(1);
     
@@ -197,9 +258,9 @@ doors()
                 "start_to_zone_01", 
                 "start_to_zone_02", 
                 "zone_01_to_atrium",
-                /*"zone_01_to_zone_01a",*/ 
+                "zone_01_to_zone_01a",
                 "zone_02_to_zone_01", 
-                /*"zone_02_to_zone_02a",*/
+                "zone_02_to_zone_02a",
                 "zone_02a_to_venthall", 
                 "venthall_to_zone_03", 
                 "venthall_to_atrium", 
@@ -227,7 +288,7 @@ doors()
         }
     }
     
-    common_scripts\utility::flag_set("door_opened");
+    flag_set("door_opened");
 }
 
 set_round()
@@ -242,6 +303,7 @@ set_delay()
     level endon("game_ended");
 
     level.waitbs = getDvarInt("delay");
+    level.waitbs += 10;
 
     maps\mp\zombies\_util::pausezombiespawning(1);
 
@@ -296,21 +358,47 @@ loadout()
     if(getDvarInt("loadout") == 0)
         return;
 
-        wait 2;
-    self takeweapon( "iw5_titan45zm_mp" );
+    wait 5;
+    self takeweapon("iw5_titan45zm_mp");
 
-        wait 5;
-    loadout = ["iw5_mahemzm_mp", "iw5_exocrossbowzm_mp"];               
-    setweaponlevel( self, loadout[1], 15);			
-    setweaponlevel( self, loadout[0], 15);   
+    wait 1;
+    primary_weapon = getDvar("primary");
+    secondary_weapon = getDvar("secondary");
+    lethal_weapon = getDvar("lethal");
+    tactical_weapon = getDvar("tactical");
     
-        wait 5;
-    self settacticalweapon( "distraction_drone_zombie_mp" );
-    self setweaponammoclip( "distraction_drone_zombie_mp", 3 );
-
-    self setlethalweapon( "contact_grenade_zombies_mp" );
-    self setweaponammoclip( "contact_grenade_zombies_mp", 5 );  
+    lvl_dvar = getDvarInt("lvl");
+    
+    if (isDefined(level.weaponData[primary_weapon]))
+    {
+        primary_full_name = level.weaponData[primary_weapon];
+        maps\mp\zombies\_wall_buys::givezombieweapon(self, primary_full_name, 1, 1);
+        maps\mp\zombies\_wall_buys::setweaponlevel(self, primary_full_name, lvl_dvar);
+    }
+    
+    if (isDefined(level.weaponData[secondary_weapon]))
+    {
+        secondary_full_name = level.weaponData[secondary_weapon];
+        self giveweapon(secondary_full_name);
+        self givemaxammo(secondary_full_name);
+        maps\mp\zombies\_wall_buys::setweaponlevel(self, secondary_full_name, lvl_dvar);
+    }
+    
+    wait 5; 
+    if (isDefined(level.weaponData[lethal_weapon]))
+    {
+        lethal_full_name = level.weaponData[lethal_weapon];
+        maps\mp\zombies\_wall_buys::givezombieequipment(self, lethal_full_name, 1);
+    }
+    
+    if (isDefined(level.weaponData[tactical_weapon]))
+    {
+        tactical_full_name = level.weaponData[tactical_weapon];
+        maps\mp\zombies\_wall_buys::givezombieequipment(self, tactical_full_name, 1);
+    }
 }
+
+
 
 upgrades_revive()
 {
@@ -432,6 +520,6 @@ strat_tester_txt()
 
     hud_text = self createfontstring("default", 1.4);
     hud_text setpoint("TOPRIGHT", "TOPRIGHT", -5, 5);     
-    hud_text.label = &"Strat Tester";
+    hud_text.label = &"Strat Tester\nv.1.2";
     hud_text.sort = 1000; 
 }
