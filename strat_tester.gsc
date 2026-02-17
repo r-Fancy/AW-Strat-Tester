@@ -17,7 +17,7 @@
 main()
 {
     level.getMapName = getMapName();
-    //setdvar("sv_cheats", 1); 
+     
     setdvar("g_useholdtime", 0); 
     create_dvar("doors", 1);
     create_dvar("power", 1);
@@ -25,17 +25,12 @@ main()
     create_dvar("delay", 30);
 
     create_dvar("loadout", 1);
-    create_dvar("primary", "arx160");
-    create_dvar("secondary", "rw1");
+    create_dvar("weapons", "arx160 rw1");
     create_dvar("lvl", 15);
     create_dvar("perks", 1);
     
-    create_dvar("lethal", "contact_grenade");
-    create_dvar("tactical", "distraction_drone");
-
-    create_dvar("zombie_hud", 0);
-    create_dvar("velocity_hud", 0);
-    create_dvar("zone_hud", 0);
+    create_dvar("lethal", "contact");
+    create_dvar("tactical", "distraction");
 }
 
 init()
@@ -49,8 +44,6 @@ init()
 initWeaponDatabase()
 {
     level.weaponData = [];
-    
-    // Primary weapons
     level.weaponData["arx160"] = "iw5_arx160zm_mp";
     level.weaponData["maul"] = "iw5_maulzm_mp";
     level.weaponData["hbra3"] = "iw5_hbra3zm_mp";
@@ -62,14 +55,10 @@ initWeaponDatabase()
     level.weaponData["uts19"] = "iw5_uts19zm_mp";
     level.weaponData["lsat"] = "iw5_lsatzm_mp";
     level.weaponData["asaw"] = "iw5_asawzm_mp";
-    
-    // Secondary weapons
     level.weaponData["rw1"] = "iw5_rw1zm_mp";
     level.weaponData["vbr"] = "iw5_vbrzm_mp";
     level.weaponData["gm6"] = "iw5_gm6zm_mp";
     level.weaponData["rhino"] = "iw5_rhinozm_mp";
-    
-    // Special/DLC weapons
     level.weaponData["ak12"] = "iw5_ak12zm_mp";
     level.weaponData["bal27"] = "iw5_bal27zm_mp";
     level.weaponData["asm1"] = "iw5_asm1zm_mp";
@@ -86,16 +75,14 @@ initWeaponDatabase()
     level.weaponData["trident"] = "iw5_tridentzm_mp";
     level.weaponData["blunderbuss"] = "iw5_dlcgun4zm_mp";
     level.weaponData["titan45"] = "iw5_titan45zm_mp";
-    
-    // Equipment
-    level.weaponData["contact_grenade"] = "contact_grenade_zombies_mp";
-    level.weaponData["explosive_drone"] = "explosive_drone_zombie_mp";
-    level.weaponData["distraction_drone"] = "distraction_drone_zombie_mp";
-    level.weaponData["dna_aoe_grenade"] = "dna_aoe_grenade_zombie_mp";
+
+    level.weaponData["contact"] = "contact_grenade_zombies_mp";
+    level.weaponData["explosive"] = "explosive_drone_zombie_mp";
+    level.weaponData["distraction"] = "distraction_drone_zombie_mp";
+    level.weaponData["dna"] = "dna_aoe_grenade_zombie_mp";
     level.weaponData["teleport"] = "teleport_zombies_mp";
     level.weaponData["repulsor"] = "repulsor_zombie_mp";
-    
-    level.weaponData["frag_grenade"] = "frag_grenade_zombies_mp";
+    level.weaponData["frag"] = "frag_grenade_zombies_mp";
 }
 
 onPlayerConnect()
@@ -113,22 +100,14 @@ onPlayerConnect()
 setup_settings()
 {
     self endon("disconnect");
+    self thread strat_tester_txt();
     self thread hud_init();
 }
-
 
 hud_init()
 {
     self endon("disconnect");
-    self thread strat_tester_txt();    
     self thread cleanupHUD();
-    
-    if (getDvarInt("zombie_hud"))
-        self thread zombie_hud();
-    if (getDvarInt("velocity_hud"))
-        self thread velocity_hud();
-    if (getDvarInt("zone_hud"))
-        self thread zone_hud();
 }
 
 cleanupHUD()
@@ -136,12 +115,6 @@ cleanupHUD()
     self endon("disconnect");    
     self waittill("disconnect");
     
-    if(isDefined(self.zT_hud)) 
-        self.zT_hud destroy();
-    if(isDefined(self.vel_hud)) 
-        self.vel_hud destroy();
-    if(isDefined(self.zone_hud)) 
-        self.zone_hud destroy();
     if(isDefined(self.hud_text)) 
         self.hud_text destroy();
 }
@@ -362,8 +335,13 @@ loadout()
     self takeweapon("iw5_titan45zm_mp");
 
     wait 1;
-    primary_weapon = getDvar("primary");
-    secondary_weapon = getDvar("secondary");
+    
+    weapons_string = getDvar("weapons");
+    weapons = strtok(weapons_string, " ");
+    
+    primary_weapon = weapons[0];
+    secondary_weapon = weapons[1];
+    
     lethal_weapon = getDvar("lethal");
     tactical_weapon = getDvar("tactical");
     
@@ -376,7 +354,7 @@ loadout()
         maps\mp\zombies\_wall_buys::setweaponlevel(self, primary_full_name, lvl_dvar);
     }
     
-    if (isDefined(level.weaponData[secondary_weapon]))
+    if (isDefined(level.weaponData[secondary_weapon]) && isDefined(secondary_weapon))
     {
         secondary_full_name = level.weaponData[secondary_weapon];
         self giveweapon(secondary_full_name);
@@ -385,6 +363,7 @@ loadout()
     }
     
     wait 5; 
+
     if (isDefined(level.weaponData[lethal_weapon]))
     {
         lethal_full_name = level.weaponData[lethal_weapon];
@@ -397,8 +376,6 @@ loadout()
         maps\mp\zombies\_wall_buys::givezombieequipment(self, tactical_full_name, 1);
     }
 }
-
-
 
 upgrades_revive()
 {
@@ -413,113 +390,13 @@ upgrades_revive()
     }
 }
 
-zombie_hud()
-{
-    if (level.getMapName == "mp_zombie_brg")
-        return;
-
-    self.zT_hud = newClientHudElem(self);
-    self.zT_hud.alignx = "right";
-    self.zT_hud.aligny = "top";
-    self.zT_hud.horzalign = "user_left";
-    self.zT_hud.vertalign = "user_top";
-    self.zT_hud.x += 20;
-    self.zT_hud.y += 80;
-    self.zT_hud.fontscale = 1;
-    self.zT_hud.hidewheninmenu = 1;
-    self.zT_hud.label = &"Zombies remaining: ";
-    self.zT_hud.alpha = 1;
-    
-    lastCount = -1;
-    
-    while(true)
-    {
-        currentCount = self thread calculateZombieCount();
-        if(currentCount != lastCount) 
-        {
-            self.zT_hud setvalue(currentCount);
-            lastCount = currentCount;
-        }
-        wait 0.25;
-    }
-}
-
-calculateZombieCount()
-{
-    totalAI = maps\mp\zombies\zombies_spawn_manager::calculatetotalai();
-    killsThisRound = int(self.kills) - int(self.killsatroundstart);
-    return totalAI - killsThisRound;
-}
-
-velocity_hud()
-{
-    if (level.getMapName == "mp_zombie_brg")
-        return;
-
-    self.vel_hud = newClientHudElem(self);
-    self.vel_hud.alignx = "right";
-    self.vel_hud.aligny = "top";
-    self.vel_hud.horzalign = "user_left";
-    self.vel_hud.vertalign = "user_top";
-    self.vel_hud.x += 20;
-    self.vel_hud.y += 70;
-    self.vel_hud.fontscale = 1.0;
-    self.vel_hud.hidewheninmenu = 1;
-    self.vel_hud.label = &"Velocity: ";
-    self.vel_hud.alpha = 1;
-
-    lastVel = -1;
-    
-    while(true)
-    {
-        velocity = self getvelocity();
-        currentVel = floor(sqrt(float(velocity[0] * velocity[0]) + float(velocity[1] * velocity[1])));
-        
-        if(currentVel != lastVel) 
-        {
-            self.vel_hud setvalue(currentVel);
-            lastVel = currentVel;
-        }
-        wait 0.1;
-    }
-}
-
-zone_hud()
-{
-    if (level.getMapName == "mp_zombie_brg")
-        return;
-
-    self.zone_hud = newClientHudElem(self);
-    self.zone_hud.alignx = "right";
-    self.zone_hud.aligny = "top";
-    self.zone_hud.horzalign = "user_left";
-    self.zone_hud.vertalign = "user_top";
-    self.zone_hud.x += 20;
-    self.zone_hud.y += 60;
-    self.zone_hud.fontscale = 1.0;
-    self.zone_hud.hidewheninmenu = 1;
-    self.zone_hud.alpha = 1;
-
-    lastZone = "";
-    
-    while(true)
-    {
-        if (isDefined(self.currentzone) && self.currentzone != lastZone)
-        {
-            self.zone_hud setText(self.currentzone);
-            lastZone = self.currentzone;
-        }
-        wait 0.2;
-    }
-}
-
 strat_tester_txt()
 {
     if (level.getMapName == "mp_zombie_brg")
         return;
 
     hud_text = self createfontstring("default", 1.4);
-    hud_text setpoint("TOPRIGHT", "TOPRIGHT", -5, 5);     
-    hud_text.label = &"Strat Tester\nv.1.2";
+    hud_text setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);     
+    hud_text.label = &"Strat Tester\nv.1.2.1";
     hud_text.sort = 1000; 
 }
