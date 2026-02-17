@@ -24,12 +24,7 @@ Done!
 - Perks reserved on down
 
 ### HUD
-- Remaining Zombies
-    - `zombie_hud 1`
-- Current Zone
-    - `zone_hud 1`
-- Velocity HUD
-    - `velocity_hud 1`
+- Removed due to errors- Hud will be back once these errors have been fixed
 
 ### Round Settings
 - Set various starting rounds
@@ -53,30 +48,30 @@ Done!
     - `loadout 1` / `loadout 0`
 
 - Choose with what weapon you spawn in
-    - `primary arx160`
-    - `secondary rw1`
+    - `weapons trident blunderbuss`
 
-- `Change Weapon level`
+- Change Weapon level
     - `lvl 15`
 
 - Choose with what tactical & lethal you spawn in
-    - `tactical distraction_drone`
-    - `lethal contact_grenade`
+    - `tactical distraction`
+    - `lethal contact`
 
 # Cheats
 
 ## List of Useful Cheats
 
+- `sv_cheats 1` Activate cheats
 - `/god` godmode
 - `/demigod` godmode but you still get hit
 - `/noclip` flying
 - `/fast_restart` restart map
 
+*Note* A full game restart is required after activating cheats
+
 # Credits
 
-## Direct Contributors
-
-- [rFancy](https://github.com/IITreborII)
+- [rFancy](#)
 
 - [FOEDI](https://github.com/FOEDI)
 
