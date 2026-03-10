@@ -9,7 +9,7 @@ This mod is meant to be an all-encompassing mod, with loads of features and opti
 1. Download Strat Tester at `Realease`
 2. Download [s1-competitive](https://gitlab.com/EvelynYuki/Competitive-S1/-/blob/main/competitive-s1.exe).
 3. Put the s1-competitive exe inside your gamefolder and launch the exe.
-4. Put your firstbox patch inside Call of Duty Advanced Warfare\storage\scripts\mp.
+4. Put your patch inside Call of Duty Advanced Warfare\storage\scripts\mp.
 
 Done!
 
