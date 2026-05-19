@@ -16,29 +16,34 @@
 
 main()
 {
+    replacefunc(::watchmagicboxtrigger, ::custom_watchmagicboxtrigger);
+
     level.getMapName = getMapName();
-     
-    setdvar("g_useholdtime", 0); 
-    create_dvar("doors", 1);
-    create_dvar("power", 1);
+    level thread initWeaponDatabase();
+ 
+    setdvar("g_useholdtime", 0);
     create_dvar("round", 60);
-    create_dvar("delay", 30);
+    create_dvar("delay", 30); 
+    create_dvar("doors", 1);
+    create_dvar("power", 1); 
+    create_dvar("move_box", 1);
 
     create_dvar("loadout", 1);
-    create_dvar("weapons", "arx160 rw1");
+    create_dvar("weapons", "mp11 rhino");
     create_dvar("lvl", 15);
     create_dvar("perks", 1);
-    
     create_dvar("lethal", "contact");
     create_dvar("tactical", "distraction");
 }
 
-init()
-{    
-    level thread onPlayerConnect();
-    level thread initWeaponDatabase();
-    level thread doors();
-    level thread power();
+strat_tester_txt()
+{
+    if (level.getMapName == "mp_zombie_brg")
+        return;
+    self.hud_text = self createfontstring("default", 1.4);
+    self.hud_text setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);     
+    self.hud_text.label = &"Strat Tester\nv.1.2.4"; 
+    self.hud_text.sort = 1000; 
 }
 
 initWeaponDatabase()
@@ -85,38 +90,31 @@ initWeaponDatabase()
     level.weaponData["frag"] = "frag_grenade_zombies_mp";
 }
 
+init()
+{   
+    level thread onPlayerConnect();
+    level.wavecounter = getDvarInt("round") - 1;
+    level thread overrideRound();
+    level thread start_round_delay();  
+    level thread doors();
+    level thread power(); 
+}
+
+overrideRound()
+{
+    wait 0.5;
+    level.wavecounter = getDvarInt("round") - 1;
+}
+
 onPlayerConnect()
 {
     level endon("game_ended");
-    
     for(;;)
     {
         level waittill("connected", player);
-        player thread setup_settings();
         player thread onPlayerSpawned();
+        player thread strat_tester_txt(); 
     }
-}
-
-setup_settings()
-{
-    self endon("disconnect");
-    self thread strat_tester_txt();
-    self thread hud_init();
-}
-
-hud_init()
-{
-    self endon("disconnect");
-    self thread cleanupHUD();
-}
-
-cleanupHUD()
-{
-    self endon("disconnect");    
-    self waittill("disconnect");
-    
-    if(isDefined(self.hud_text)) 
-        self.hud_text destroy();
 }
 
 onPlayerSpawned()
@@ -129,8 +127,6 @@ onPlayerSpawned()
         self waittill("spawned_player");
         self freezeControls(false);
         self resetmoney(500000);
-        self thread set_delay();
-        self thread set_round();
         self thread give_player_assets();
     }
 }
@@ -193,7 +189,7 @@ doors()
                 "roundabout_to_military",
                 "courtyard_to_administration",
                 "administration_to_lab", 
-                "lab_to_experimentation",
+                //"lab_to_experimentation",
                 "military_to_experimentation"
             ];
             break;
@@ -240,52 +236,44 @@ doors()
                 "atrium_to_zone_04"
             ];
             break;
-        return;
     }
 
-    if (isdefined(doorFlags))
+    foreach(door_flag in doorFlags)
     {
-        foreach(door_flag in doorFlags)
+        foreach(door in level.zombiedoors)
         {
-            foreach(door in level.zombiedoors)
+            if(isdefined(door.script_flag) && door.script_flag == door_flag)
             {
-                if(isdefined(door.script_flag) && door.script_flag == door_flag)
+                door notify("open", undefined);
+                if(isdefined(level.doorbitmaskarray[door_flag]))
                 {
-                    door notify("open", undefined);
-                    if(isdefined(level.doorbitmaskarray[door_flag]))
-                    {
-                        level.doorsopenedbitmask |= level.doorbitmaskarray[door_flag];
-                    }
+                    level.doorsopenedbitmask |= level.doorbitmaskarray[door_flag];
                 }
             }
         }
     }
+
+    if (!isdefined(doorFlags))
+        return;
     
     flag_set("door_opened");
 }
 
-set_round()
+start_round_delay()
 {
-    level.wavecounter = getDvarInt("round");
-    level.wavecounter -=1;
-}
-
-set_delay()
-{
-    level endon("disconnect");
     level endon("game_ended");
-
-    level.waitbs = getDvarInt("delay");
-    level.waitbs += 10;
+    level.waitbs = getDvarInt("delay") + 10;
 
     maps\mp\zombies\_util::pausezombiespawning(1);
 
     while(level.waitbs > -1)
     {
-        level.waithud settext(level.waitbs);
+        level.waithud setText(level.waitbs);
         wait 1;
-        level.waitbs --;
+        level.waitbs--;
     }
+
+    level notify("round_start");
 
     maps\mp\zombies\_util::pausezombiespawning(0);
     level.waithud destroy();
@@ -303,7 +291,7 @@ upgrades()
     if(getDvarInt("perks") == 0)
         return;
 
-    wait 5;
+    wait 5;   
     if (level.getMapName == "mp_zombie_lab" || level.getMapName == "mp_zombie_brg")
     {
             perkterminalgive(self, "exo_suit");
@@ -331,7 +319,7 @@ loadout()
     if(getDvarInt("loadout") == 0)
         return;
 
-    wait 5;
+    wait 15;
     self takeweapon("iw5_titan45zm_mp");
 
     wait 1;
@@ -354,7 +342,7 @@ loadout()
         maps\mp\zombies\_wall_buys::setweaponlevel(self, primary_full_name, lvl_dvar);
     }
     
-    if (isDefined(level.weaponData[secondary_weapon]) && isDefined(secondary_weapon))
+    if (isDefined(secondary_weapon) && secondary_weapon != "" && isDefined(level.weaponData[secondary_weapon]))
     {
         secondary_full_name = level.weaponData[secondary_weapon];
         self giveweapon(secondary_full_name);
@@ -386,17 +374,214 @@ upgrades_revive()
     while(1)
     {
         self waittill("revive_trigger");
-        upgrades();
+        self thread upgrades();   
     }
 }
 
-strat_tester_txt()
+custom_watchmagicboxtrigger( var_0, var_1 )
 {
-    if (level.getMapName == "mp_zombie_brg")
+    if(getDvarInt("move_box") == 0)
         return;
 
-    hud_text = self createfontstring("default", 1.4);
-    hud_text setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);     
-    hud_text.label = &"Strat Tester\nv.1.2.1";
-    hud_text.sort = 1000; 
+    var_2 = 0;
+    //var_3 = randomintrange( 4, 7 );
+	var_3 = 9999;
+    var_4 = int( var_0.script_parameters );
+    var_5 = var_0.modelent.origin;
+    var_6 = var_0.modelent gettagangles( "tag_printer_laser" );
+    var_7 = spawn( "script_model", var_5 );
+    var_7.angles = var_6 + ( 0, 90, 0 );
+    var_7 setmodel( "tag_origin" );
+    var_0.weaponmodel = var_7;
+    var_0.lastweapon = "";
+    maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_slow" ), var_0.modelent, "tag_origin" );
+
+    for (;;)
+    {
+        if ( var_1 && !maps\mp\_utility::gameflag( "fire_sale" ) )
+            break;
+
+        var_8 = var_0 magicboxusewait();
+
+        if ( !isdefined( var_8 ) )
+            break;
+
+        [var_10, var_11] = var_8;
+        var_12 = var_2 >= var_3 && !maps\mp\_utility::gameflag( "fire_sale" ) && !isscriptedmagicbox( var_0 );
+        var_13 = getmagicboxcost( var_4 );
+        var_14 = var_10 getcurrentprimaryweapon();
+
+        if ( maps\mp\zombies\_util::isrippedturretweapon( var_14 ) || maps\mp\zombies\_util::iszombiekillstreakweapon( var_14 ) || maps\mp\zombies\_util::arewallbuysdisabled() )
+            continue;
+
+        if ( var_12 && !var_10 maps\mp\gametypes\zombies::canbuy( var_13 ) )
+        {
+            var_10 thread maps\mp\zombies\_zombies_audio::playerweaponbuy( "printer_no_cash" );
+            continue;
+        }
+
+        if ( !var_12 && !isdefined( self.deactivated ) )
+        {
+            if ( var_11 == "token" )
+                var_10 maps\mp\gametypes\zombies::spendtoken( var_0.tokencost );
+            else if ( !var_10 maps\mp\gametypes\zombies::attempttobuy( var_13 ) )
+            {
+                var_10 thread maps\mp\zombies\_zombies_audio::playerweaponbuy( "printer_no_cash" );
+                continue;
+            }
+        }
+
+        if ( !var_12 && !isdefined( self.deactivated ) )
+        {
+            if ( var_2 == 0 )
+                var_10 thread maps\mp\zombies\_zombies_audio::playerfoundprinter();
+
+            level notify( "magicBoxUse", var_0 );
+            var_0 common_scripts\utility::trigger_off();
+            var_0.isdispensingweapon = 1;
+            var_10 thread maps\mp\zombies\_zombies_audio::moneyspend();
+            maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_slow" ), var_0.modelent, "tag_origin" );
+            var_18 = selectmagicboxweapon( var_10, var_0 );
+            level.ondeckweapons[level.ondeckweapons.size] = var_18["fullName"];
+            var_7 setmodel( var_18["displayModel"] );
+            level thread centerweaponformagicbox( var_0.modelent, var_7 );
+            var_7 show();
+
+            if ( level.nextgen )
+                var_7 cloakingenable();
+
+            wait 0.5;
+
+            if ( level.nextgen )
+                var_7 cloakingdisable();
+
+            var_0.modelent scriptmodelplayanim( "dlc_weapon_mystery_box_01_open", "magicBox" );
+            var_0.modelent.soundent playsound( "interact_mystery_box" );
+            maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "station_mystery_box" ), var_0.modelent, "tag_printer_laser", 1 );
+            maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "magic_box_steam" ), var_0.modelent, "tag_origin", 1 );
+            var_0.lastweapon = var_18["baseName"];
+            level.magicboxuses++;
+
+            if ( isdefined( var_10 ) )
+            {
+                var_10.magicboxuses++;
+                var_10 givemagicboxachievement();
+            }
+
+            thread audio_magicbox_attract_in_use( var_0.modelent );
+            var_0.modelent waittillmatch( "magicBox", "weapon_ready" );
+            var_19 = var_18["displayString"];
+
+            if ( isdefined( var_0.magicboxpickupstrfunc ) )
+                var_19 = [[ var_0.magicboxpickupstrfunc ]]();
+
+            var_0 sethintstring( var_19 );
+            var_0 setsecondaryhintstring( "" );
+            var_0 maps\mp\zombies\_util::tokenhintstring( 0 );
+
+            if ( isdefined( var_10 ) )
+                var_10 clientclaimtrigger( var_0 );
+
+            var_0 common_scripts\utility::trigger_on();
+            var_0 notify( "pickupReady" );
+            var_20 = 8;
+            var_21 = gettime() + var_20 * 1000;
+            level thread flashweaponmodel( var_7 );
+            var_22 = "nothing";
+
+            while ( gettime() < var_21 && var_22 != "trigger" )
+            {
+                var_23 = ( var_21 - gettime() ) / 1000;
+                var_0 thread activemagicboxtimeout( var_23 );
+                var_24 = var_0 maps\mp\zombies\_util::waittill_any_return_parms_no_endon_death( "timeout", "trigger" );
+                var_0 notify( "stopActiveMagicBoxTimeout" );
+                var_22 = var_24[0];
+
+                if ( var_22 == "timeout" )
+                    break;
+
+                var_25 = var_24[1];
+
+                if ( isdefined( var_0.magicboxcanpickupfunc ) )
+                {
+                    if ( ![[ var_0.magicboxcanpickupfunc ]]( var_25 ) )
+                        var_22 = "nothing";
+                }
+                else
+                {
+                    var_14 = var_25 getcurrentprimaryweapon();
+
+                    if ( maps\mp\zombies\_util::isrippedturretweapon( var_14 ) || maps\mp\zombies\_util::iszombiekillstreakweapon( var_14 ) || maps\mp\zombies\_util::arewallbuysdisabled() )
+                        var_22 = "nothing";
+                }
+
+                if ( var_22 == "trigger" )
+                    var_10 = var_25;
+            }
+
+            var_0.modelent.soundent playsound( "interact_mystery_box_reset" );
+            var_0.modelent scriptmodelplayanim( "dlc_weapon_mystery_box_01_close", "magicBox" );
+            var_0 common_scripts\utility::trigger_off();
+            var_0 sethintstring( getmagicboxhintsting() );
+            var_0 setsecondaryhintstring( var_0 getmagicboxhintstringcost() );
+            var_0 maps\mp\zombies\_util::settokencost( maps\mp\zombies\_util::creditstotokens( var_0.cost ) );
+            var_0 maps\mp\zombies\_util::tokenhintstring( 1 );
+            var_0 releaseclaimedtrigger();
+            var_7 setmodel( "tag_origin" );
+            var_7 notify( "stop_flashing" );
+
+            if ( isdefined( var_10 ) )
+            {
+                var_26 = getupgradeweaponname( var_10, var_18["fullName"] );
+
+                if ( isdefined( var_0.magicboxgivefunc ) )
+                    var_0 [[ var_0.magicboxgivefunc ]]( var_22, var_10 );
+                else if ( var_22 == "trigger" && maps\mp\_utility::isreallyalive( var_10 ) && !maps\mp\zombies\_util::isplayerinlaststand( var_10 ) )
+                {
+                    if ( maps\mp\zombies\_util::iszombieequipment( var_26 ) )
+                        givezombieequipment( var_10, var_26 );
+                    else
+                        givezombieweapon( var_10, var_26 );
+                }
+            }
+
+            level.ondeckweapons = arrayremovestring( level.ondeckweapons, var_18["fullName"] );
+            var_0.modelent waittillmatch( "magicBox", "end" );
+            var_0 common_scripts\utility::trigger_on();
+            var_0.isdispensingweapon = 0;
+            var_0 notify( "magicBoxUseEnd" );
+            thread audio_magicbox_attract_on( var_0.modelent );
+
+            if ( !maps\mp\_utility::gameflag( "fire_sale" ) )
+                var_2++;
+
+            maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_slow" ), var_0.modelent, "tag_origin" );
+            continue;
+        }
+
+        var_0 common_scripts\utility::trigger_off();
+        var_0.ismoving = 1;
+        maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_slow" ), var_0.modelent, "tag_origin" );
+        maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_fast" ), var_0.modelent, "tag_origin" );
+        var_0.modelent.soundent playsound( "interact_mystery_box_break" );
+        thread audio_magicbox_attract_in_use( var_0.modelent );
+        wait 2;
+        maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_fast" ), var_0.modelent, "tag_origin" );
+        maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "station_mystery_box_icon_on" ), var_0.modelent, "tag_origin" );
+        maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "magic_box_move" ), var_0.modelent, "tag_origin" );
+        maps\mp\zombies\_util::playfxontagnetwork( common_scripts\utility::getfx( "magic_box_steam" ), var_0.modelent, "tag_origin", 1 );
+        var_0.modelent scriptmodelplayanim( "dlc_weapon_mystery_box_01_malfunction", "magicBox" );
+        maps\mp\zombies\_zombies_audio_announcer::announcerprintermoveddialog();
+        wait 3;
+        var_0.modelent.soundent playsound( "interact_mystery_box_shutoff" );
+        wait 2;
+        maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "magic_box_move" ), var_0.modelent, "tag_origin" );
+        var_0.ismoving = 0;
+        var_0 common_scripts\utility::trigger_on();
+        break;
+    }
+
+    maps\mp\zombies\_util::killfxontagnetwork( common_scripts\utility::getfx( "weapon_cycle_slow" ), var_0.modelent, "tag_origin" );
+    var_7 delete();
 }
+

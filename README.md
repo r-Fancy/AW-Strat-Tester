@@ -15,6 +15,10 @@ Done!
 
 (This also works with other clients, but the locations may differ)
 
+## Additional Files
+
+Some maps don't allow to load certain libraries if its for a different Map. For now my way to avoid this issue is to simply create Map specific files. So If you want to use map specific features, drag the coresponding file in. This also means if you play a different map, you should remove the Patch again. *Note: strat_tester.gsc should always be in*
+
 ## Current Features:
 
 *Note* Some settings require a "fast_restart" to take effect.
@@ -22,6 +26,14 @@ Done!
 ### General
 - 500,000 points on spawn
 - Perks reserved on down
+
+### Map Specifics
+- Infection
+    - No Toxic Zones
+        `toxic_round 0`
+- Carrier
+    - No Breaches
+        `breach 0`
 
 ### HUD
 - Removed due to errors- Hud will be back once these errors have been fixed
@@ -34,38 +46,41 @@ Done!
 
 ### Perks & Drops
 - Choose weither you spawn with Perks or not 
-    - `perks 0` spawn with no Perks
-    - `perks 1` spawn with all Perks
+    - `/perks 0` spawn with no Perks
+    - `/perks 1` spawn with all Perks
 
 ### Game Settings
 - Open/Close all Doors:
-    - `doors 0`
+    - `/doors 1`
 - Activate/Deactivate all Generators
-    - `power 0`
+    - `/power 1`
+- Move the box/Don't move the box
+    - `/move_box 1`
 
 ### Weapon Options
 - Enable or Dissable loadout
-    - `loadout 1` / `loadout 0`
+    - `loadout 1` 
 
 - Choose with what weapon you spawn in
-    - `weapons trident blunderbuss`
+    - `/weapons trident blunderbuss`
 
 - Change Weapon level
-    - `lvl 15`
+    - `/lvl 15`
 
 - Choose with what tactical & lethal you spawn in
-    - `tactical distraction`
-    - `lethal contact`
+    - `/tactical distraction`
+    - `/lethal contact`
 
 # Cheats
 
 ## List of Useful Cheats
 
-- `sv_cheats 1` Activate cheats
+- `/sv_cheats 1` Activate cheats
 - `/god` godmode
 - `/demigod` godmode but you still get hit
 - `/noclip` flying
 - `/fast_restart` restart map
+- `/map_restart` fully restart map
 
 *Note* A full game restart is required after activating cheats
 
