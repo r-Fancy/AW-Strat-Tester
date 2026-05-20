@@ -157,7 +157,7 @@ give_killstreaks()
     if(getDvarInt("loadout") == 0)
         return;
 
-    wait 1;
+    wait 15;
 
     killstreak_name = getDvar("killstreak");
     
