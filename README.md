@@ -32,7 +32,10 @@ Done!
         `breach 0`
 
 ### HUD
-- Removed due to errors- Hud will be back once these errors have been fixed
+- Turn on/off Hud Elements:
+    `/velocity_hud 1`
+    `/zombie_hud 1`
+    `/zone_hud 1`
 
 ### Round Settings
 - Set various starting rounds
