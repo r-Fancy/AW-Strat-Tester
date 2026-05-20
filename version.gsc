@@ -26,6 +26,6 @@ strat_tester_txt()
         return;
     self.hud_text = self createfontstring("default", 1.4);
     self.hud_text setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);     
-    self.hud_text.label = &"Strat Tester\nv.1.2.5"; 
+    self.hud_text.label = &"Strat Tester\nv.1.2.6"; 
     self.hud_text.sort = 1000; 
 }

@@ -68,7 +68,7 @@ doors()
             doorFlags = [
                 "sidebay_to_armory", 
                 "rearbay_to_armory", 
-                "cargo_elevator_to_cargo_bay",
+                //"cargo_elevator_to_cargo_bay",
                 "biomed_to_cargo_bay", 
                 "armory_to_biomed", 
                 "armory_to_cargo_elevator",

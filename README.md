@@ -7,9 +7,9 @@ This mod is meant to be an all-encompassing mod, with loads of features and opti
 ## Download
 
 1. Download Strat Tester at `Realease`
-2. Download [s1-competitive](https://gitlab.com/EvelynYuki/Competitive-S1/-/blob/main/competitive-s1.exe).
+2. Download [s1-competitive](https://gitlab.com/DaddyDontStop/Competitive-S1).
 3. Put the s1-competitive exe inside your gamefolder and launch the exe.
-4. Put your scripts inside Call of Duty Advanced Warfare\storage\scripts\mp.
+4. Put your patch inside Call of Duty Advanced Warfare\storage\scripts\mp.
 
 Done!
 
@@ -20,15 +20,15 @@ Done!
 *Note* Some settings require a "fast_restart" to take effect.
 
 ### General
-- 500,000 points on spawn
+- 7,777,777 points on spawn
 - Perks reserved on down
 
 ### Map Specifics
 - Infection
-    - No Toxic Zones
+    - Turn on/off Toxic Zones
         `toxic_round 0`
 - Carrier
-    - No Breaches
+    - Turn on/off Bomb Breach
         `breach 0`
 
 ### HUD
@@ -41,24 +41,31 @@ Done!
     `delay <seconds>`
 
 ### Perks & Drops
-- Choose weither you spawn with Perks or not 
-    - `/perks 0` spawn with no Perks
-    - `/perks 1` spawn with all Perks
+- Turn on/off Perks
+    - `/perks 1`
+- Turn on/off Drops
+    - `/drops 0` - Outbreak and Infection
+    - `/drops_dlc3 0` - Carrier and Descent
+- Turn on/off Supply Drops
+    - `/supply_drops 0`
 
 ### Game Settings
-- Open/Close all Doors:
+- Turn on/off open all Doors
     - `/doors 1`
-- Activate/Deactivate all Generators
+- Turn on/off all Generators
     - `/power 1`
-- Move the box/Don't move the box
+- Turn on/off box moving
     - `/move_box 1`
 
-### Weapon Options
-- Enable or Dissable loadout
+### Loadout
+- Turn on/off Loadout
     - `loadout 1` 
 
 - Choose with what weapon you spawn in
     - `/weapons trident blunderbuss`
+
+- Choose Killstreaks
+    - `/killstreak camouflage`
 
 - Change Weapon level
     - `/lvl 15`

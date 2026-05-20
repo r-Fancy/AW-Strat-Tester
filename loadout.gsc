@@ -1,16 +1,27 @@
 #include common_scripts\utility;
 #include maps\mp\zombies\_terminals;
+#include maps\mp\zombies\killstreaks\_zombie_killstreaks;
 
 main()
 {
     create_dvar("loadout", 1);
+
     create_dvar("weapons", "mp11 rhino");
     create_dvar("lvl", 15);
-    create_dvar("perks", 1);
+    
     create_dvar("lethal", "contact");
     create_dvar("tactical", "distraction");
 
-    level thread initWeaponDatabase();
+    create_dvar("killstreak", "camouflage");
+}
+
+initKillstreakDatabase()
+{
+    level.killstreakData = [];
+    level.killstreakData["sentry"] = "zm_sentry";
+    level.killstreakData["drone"] = "zm_ugv"; 
+    level.killstreakData["camouflage"] = "zm_camouflage";
+    level.killstreakData["squadmate"] = "zm_squadmate";
 }
 
 initWeaponDatabase()
@@ -60,6 +71,8 @@ initWeaponDatabase()
 init()
 {
     level thread onPlayerConnect();
+    level thread initWeaponDatabase();
+    level thread initKillstreakDatabase();
 }
 
 onPlayerConnect()
@@ -82,11 +95,12 @@ onPlayerSpawned()
     for(;;)
     {
         self waittill("spawned_player");
-        self thread loadout();
+        self thread give_loadout();
+        self thread give_killstreaks();
     }
 }
 
-loadout()
+give_loadout()
 {
     self endon("disconnect");
     level endon("game_ended");
@@ -135,5 +149,23 @@ loadout()
     {
         tactical_full_name = level.weaponData[tactical_weapon];
         maps\mp\zombies\_wall_buys::givezombieequipment(self, tactical_full_name, 1);
+    }
+}
+
+give_killstreaks()
+{   
+    if(getDvarInt("loadout") == 0)
+        return;
+
+    wait 1;
+
+    killstreak_name = getDvar("killstreak");
+    
+    if(isDefined(level.killstreakData[killstreak_name]))
+    {
+        killstreak_full_name = level.killstreakData[killstreak_name];
+        self maps\mp\killstreaks\_killstreaks::givekillstreak(killstreak_full_name, 0, 0, self, undefined, 2);
+        self maps\mp\killstreaks\_killstreaks::givekillstreak(killstreak_full_name, 0, 0, self, undefined, 3);
+        self maps\mp\killstreaks\_killstreaks::givekillstreak(killstreak_full_name, 0, 0, self, undefined, 4);
     }
 }
