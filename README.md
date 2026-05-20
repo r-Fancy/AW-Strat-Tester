@@ -9,15 +9,11 @@ This mod is meant to be an all-encompassing mod, with loads of features and opti
 1. Download Strat Tester at `Realease`
 2. Download [s1-competitive](https://gitlab.com/EvelynYuki/Competitive-S1/-/blob/main/competitive-s1.exe).
 3. Put the s1-competitive exe inside your gamefolder and launch the exe.
-4. Put your patch inside Call of Duty Advanced Warfare\storage\scripts\mp.
+4. Put your scripts inside Call of Duty Advanced Warfare\storage\scripts\mp.
 
 Done!
 
 (This also works with other clients, but the locations may differ)
-
-## Additional Files
-
-Some maps don't allow to load certain libraries if its for a different Map. For now my way to avoid this issue is to simply create Map specific files. So If you want to use map specific features, drag the coresponding file in. This also means if you play a different map, you should remove the Patch again. *Note: strat_tester.gsc should always be in*
 
 ## Current Features:
 
