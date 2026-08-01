@@ -29,6 +29,7 @@ Call of Duty Advanced Warfare\storage\scripts\mp
 
 > **Note:** Strat Tester also works with other clients, although the file locations may differ.
 
+* [YouTube Guide](https://www.youtube.com/watch?v=vXT4nNzFczI&t=5s)
 ---
 
 # Features
