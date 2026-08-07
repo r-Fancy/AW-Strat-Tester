@@ -35,6 +35,7 @@ Call of Duty Advanced Warfare\storage\scripts\mp
 # Features
 
 > **Note:** Some settings require a `fast_restart` to take effect.
+> For Additional help regarding dvars look into the /additional folder.
 
 ## General
 
