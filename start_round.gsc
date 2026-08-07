@@ -7,14 +7,19 @@ main()
 
 init()
 {
-    level thread overrideRound();
+    level thread override_round();
 }
 
-overrideRound()
-{   
-    level endon( "game_ended" );
-    self endon( "disconnect" );
+override_round()
+{
+    level endon("game_ended");
 
     wait 0.5;
-    level.wavecounter = getDvarInt("round") - 1;
+
+    round = getDvarInt("round");
+
+    if (round < 1)
+        round = 1;
+
+    level.wavecounter = round - 1;
 }
