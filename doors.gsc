@@ -5,70 +5,89 @@
 main()
 {
     level.getMapName = getMapName();
-    create_dvar("doors", 1);
+    create_dvar("doors", 1); 
+
+    door_flags = get_door_flags();
+
+    foreach (door_flag in door_flags)
+        create_dvar("door_" + door_flag, 1);
 }
 
 init()
 {
-    level thread doors();
+    level thread open_configured_doors();
 }
 
-doors()
-{   
-    level endon( "game_ended" );
-    self endon( "disconnect" );
+open_configured_doors()
+{
+    level endon("game_ended");
 
-    wait 1;
-
-    if(getDvarInt("doors") == 0)
+    if (!getDvarInt("doors"))
         return;
-        
-    flag_init("door_opened");
-    if (!isdefined(level.doorhintstrings))
+
+    door_flags = get_door_flags();
+
+    if (!door_flags.size)
+        return;
+
+    while (!isdefined(level.zombiedoors))
+        wait 0.05;
+
+    foreach (door_flag in door_flags)
     {
-        level.doorhintstrings = [];
+    if (!getDvarInt("door_" + door_flag))
+        continue;
+
+    foreach (door_struct in level.zombiedoors)
+        {
+        if (!isdefined(door_struct) || door_struct.script_flag != door_flag)
+            continue;
+
+        while (!isdefined(door_struct.triggers) || !isdefined(door_struct.movers))
+            wait 0.05;
+
+        waitframe();
+
+        if (!isdefined(door_struct.open) || !door_struct.open)
+            door_struct notify("open", undefined);
+        }
     }
-    if (!isdefined(level.zombiedoors))
-    {
-        level.zombiedoors = getstructarray("door", "targetname");
-        array_thread(level.zombiedoors, ::init_door);
-    }
-    wait(1);
-    
-    doorFlags = undefined;
-    switch(level.getMapName)
+}
+
+get_door_flags()
+{
+    switch (level.getMapName)
     {
         case "mp_zombie_lab":
-            doorFlags = [
+            return [
                 "courtyard_to_roundabout",
+                "courtyard_to_administration",
                 "roundabout_to_lab",
                 "roundabout_to_military",
-                "courtyard_to_administration",
-                "administration_to_lab", 
-                //"lab_to_experimentation",
-                "military_to_experimentation"
+                "administration_to_lab",
+                "military_to_experimentation",
+                "lab_to_experimentation"
             ];
-            break;
 
         case "mp_zombie_brg":
-            doorFlags = [
+            return [
                 "warehouse_to_gas_station",
                 "warehouse_to_atlas",
-                "gas_station_interior", 
+                "gas_station_interior",
                 "gas_station_to_sewer",
                 "atlas_command",
-                "atlas_to_sewer",  
+                "atlas_to_sewer",
                 "sewertrans_to_sewertunnel",
                 "sewermain_to_sewercave",
-                "sewer_to_burgertown", 
-                "burgertown_storage"  
+                "sewer_to_burgertown",
+                "burgertown_storage"
             ];
-            break;
+        
         case "mp_zombie_ark":
-            doorFlags = [
+            return [
                 "sidebay_to_armory", 
                 "rearbay_to_armory", 
-                //"cargo_elevator_to_cargo_bay",
+                "cargo_elevator_to_cargo_bay",
                 "biomed_to_cargo_bay", 
                 "armory_to_biomed", 
                 "armory_to_cargo_elevator",
@@ -77,9 +96,9 @@ doors()
                 "sidebay_to_medical", 
                 "rearbay_to_moonpool"
             ];
-            break;
+
         case "mp_zombie_h2o":
-            doorFlags = [
+            return [
                 "start_to_zone_01", 
                 "start_to_zone_02", 
                 "zone_01_to_atrium",
@@ -91,26 +110,7 @@ doors()
                 "venthall_to_atrium", 
                 "atrium_to_zone_04"
             ];
-            break;
     }
 
-    foreach(door_flag in doorFlags)
-    {
-        foreach(door in level.zombiedoors)
-        {
-            if(isdefined(door.script_flag) && door.script_flag == door_flag)
-            {
-                door notify("open", undefined);
-                if(isdefined(level.doorbitmaskarray[door_flag]))
-                {
-                    level.doorsopenedbitmask |= level.doorbitmaskarray[door_flag];
-                }
-            }
-        }
-    }
-
-    if (!isdefined(doorFlags))
-        return;
-    
-    flag_set("door_opened");
+    return [];
 }

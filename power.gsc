@@ -8,39 +8,46 @@ main()
 
 init()
 {
-    level thread power(); 
+    level thread enable_power();
 }
 
-power()
+enable_power()
 {
-    self endon("disconnect");
     level endon("game_ended");
 
-    if(getDvarInt("power") == 0)
+    if (!getDvarInt("power"))
         return;
 
-    wait 1;
+    while (!isdefined(level.power_switches) || !level.power_switches.size)
+        wait 0.05;
 
-    if (!isDefined(level.power_switches) || level.power_switches.size == 0)
+    if (!isdefined(level.power_switches) || !level.power_switches.size)
         return;
 
     foreach (power_switch in level.power_switches)
     {
-        if (!isDefined(power_switch)) continue;
-        
+        if (!isdefined(power_switch))
+            continue;
+
         flag_set(power_switch.script_flag);
         power_switch notify("on");
 
-        if (isDefined(power_switch.showents))
+        if (isdefined(power_switch.showents))
         {
             foreach (ent in power_switch.showents)
-                if (isDefined(ent)) ent show();
+            {
+                if (isdefined(ent))
+                    ent show();
+            }
         }
-        
-        if (isDefined(power_switch.hideents))
+
+        if (isdefined(power_switch.hideents))
         {
             foreach (ent in power_switch.hideents)
-                if (isDefined(ent)) ent hide();
+            {
+                if (isdefined(ent))
+                    ent hide();
+            }
         }
     }
 }

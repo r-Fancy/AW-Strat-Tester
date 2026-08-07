@@ -2,30 +2,31 @@
 
 init()
 {
-    level thread onPlayerConnect();
+    level thread on_player_connect();
 }
 
-onPlayerConnect()
+on_player_connect()
 {
-    self endon("disconnect");
     level endon("game_ended");
 
-    for(;;)
+    for (;;)
     {
         level waittill("connected", player);
-        player thread strat_tester_txt(); 
+
+        if (level.getMapName == "mp_zombie_brg")
+            continue;
+
+        player thread create_strat_tester_hud();
     }
 }
 
-strat_tester_txt()
+create_strat_tester_hud()
 {
     self endon("disconnect");
     level endon("game_ended");
 
-    if (level.getMapName == "mp_zombie_brg")
-        return;
-    self.hud_text = self createfontstring("default", 1.4);
-    self.hud_text setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);     
-    self.hud_text.label = &"Strat Tester\nv.1.2.8"; 
-    self.hud_text.sort = 1000; 
+    hud = self createfontstring("default", 1.4);
+    hud setpoint("TOPRIGHT", "TOPRIGHT", -10, 10);
+    hud.label = &"Strat Tester\nv.1.2.9";
+    hud.sort = 1000;
 }

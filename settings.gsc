@@ -7,31 +7,29 @@ main()
 
 init()
 {
-    level thread onPlayerConnect();
+    level thread on_player_connect();
 }
 
-onPlayerConnect()
+on_player_connect()
 {
-    self endon("disconnect");
     level endon("game_ended");
 
-    for(;;)
+    for (;;)
     {
         level waittill("connected", player);
-        player thread onPlayerSpawned();
+        player thread on_player_spawned();
     }
 }
 
-onPlayerSpawned()
+on_player_spawned()
 {
     self endon("disconnect");
     level endon("game_ended");
-    
-    for(;;)
+
+    for (;;)
     {
         self waittill("spawned_player");
-        self freezeControls(false);
+        self freezecontrols(false);
         self resetmoney(7777777);
-        // self thread give_player_assets();
     }
 }

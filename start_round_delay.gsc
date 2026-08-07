@@ -3,7 +3,7 @@
 
 main()
 {
-    create_dvar("delay", 30); 
+    create_dvar("delay", 30);
 }
 
 init()
@@ -13,23 +13,32 @@ init()
 
 start_round_delay()
 {
-    level endon( "game_ended" );
-    self endon( "disconnect" );
+    level endon("game_ended");
 
     wait 10;
-    level.waitbs = getDvarInt("delay");
+
+    delay = getDvarInt("delay");
+
+    if (delay < 0)
+        delay = 0;
 
     maps\mp\zombies\_util::pausezombiespawning(1);
 
-    while(level.waitbs > -1)
+    while (delay > 0)
     {
-        level.waithud setText(level.waitbs);
+        if (isdefined(level.waithud))
+            level.waithud setText(delay);
+
         wait 1;
-        level.waitbs--;
+        delay--;
+    }
+
+    if (isdefined(level.waithud))
+    {
+        level.waithud setText(0);
+        level.waithud destroy();
     }
 
     level notify("round_start");
-
     maps\mp\zombies\_util::pausezombiespawning(0);
-    level.waithud destroy();
 }
